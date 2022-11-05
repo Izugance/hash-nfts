@@ -22,8 +22,12 @@ def generate_json(
             attribute, value = attribute.split(":")
         except Exception:
             # The attributes are improperly formatted.
-            # Set the attributes_list to the raw form of the input
-            attributes_list = nft["Attributes"]
+            # Add the gender attribute to the attributes, as a string,
+            # then break out of the loop.
+            raw_attributes = nft["Attributes"]
+            attributes_with_gender = f"gender: {nft["Gender"]} " + raw_attributes
+            attributes_list = [nft["Attributes"]]
+            break
         else:    
             attributes_list.append(
                 {"trait_type": attribute.strip(), "value": value.strip()}
@@ -33,7 +37,7 @@ def generate_json(
         "format": "CHIP-0007",
         "name": nft["Name"],
         "description": nft["Description"],
-        "miniting_tool": nft["TEAM NAMES"],
+        "miniting_tool": nft["Teams"],
         "sensitive_content": nft.get("Sensitive Content", False),
         "series_number": nft["Series Number"],
         "series_total": series_total,
@@ -78,7 +82,14 @@ def hash_nfts(file_path: str) -> None:
 
             writer = csv.DictWriter(outfile, fieldnames=fields)
             writer.writeheader()
+            current_team = ""
             for nft in nfts:
+                # Due to the format of the csv file, we need to update each
+                # nft to have the Teams field filled.
+                if nft["Teams"] and nft["Teams"] != current_team:
+                    current_team = nft["Teams"]
+                nft["Teams"] = current_team
+                    
                 json_nft, json_file_path = generate_json(nft, series_total, tmp)
                 with json_file_path.open("w") as jf:
                     json.dump(json_nft, jf)
