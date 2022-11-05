@@ -26,7 +26,7 @@ def generate_json(
             # then break out of the loop.
             raw_attributes = nft["Attributes"]
             attributes_with_gender = f"gender: {nft['Gender']} " + raw_attributes
-            attributes_list = [nft["Attributes"]]
+            attributes_list = [attributes_with_gender]
             break
         else:    
             attributes_list.append(
